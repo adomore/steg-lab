@@ -109,6 +109,52 @@ def test_manifest_round_trip(tmp_path):
     assert len(corpus.verify_manifest(tmp_path / "manifest.json", tmp_path / "c")) == 1
 
 
+def test_manifest_records_the_toolchain():
+    """A digest mismatch is unreadable without knowing what produced it."""
+    assert set(corpus.toolchain()) == {"python", "Pillow", "zlib"}
+    assert all(v for v in corpus.toolchain().values())
+
+
+def test_manifest_drift_is_detected_against_the_stored_digests(tmp_path):
+    """The check `--verify` structurally cannot do.
+
+    `--verify` hashes files on disk against the manifest. When generate.py
+    rewrote the manifest first, the two agreed by construction. This compares
+    freshly rendered digests against what is stored, which is the only way
+    drift away from the committed corpus becomes visible.
+    """
+    specs = corpus.default_specs()[:3]
+    digests = corpus.write_corpus(specs, tmp_path / "c")
+    manifest = tmp_path / "manifest.json"
+    corpus.write_manifest(specs, digests, manifest)
+
+    assert corpus.manifest_drift(manifest, digests) == []
+
+    drifted = dict(digests)
+    drifted[specs[0].name] = "0" * 64
+    problems = corpus.manifest_drift(manifest, drifted)
+    assert any(specs[0].name in p for p in problems)
+    # Same toolchain, so the report must point at the renderer rather than
+    # leaving the reader to guess between the two causes.
+    assert any("UNCHANGED" in p for p in problems)
+
+
+def test_manifest_drift_tolerates_a_manifest_without_a_toolchain(tmp_path):
+    """v1.0.0 shipped before toolchain recording; it must still be checkable."""
+    specs = corpus.default_specs()[:2]
+    digests = corpus.write_corpus(specs, tmp_path / "c")
+    manifest = tmp_path / "manifest.json"
+    corpus.write_manifest(specs, digests, manifest)
+
+    stripped = json.loads(manifest.read_text())
+    del stripped["toolchain"]
+    manifest.write_text(json.dumps(stripped))
+
+    assert corpus.manifest_drift(manifest, digests) == []
+    problems = corpus.manifest_drift(manifest, {**digests, specs[0].name: "0" * 64})
+    assert any("predates toolchain recording" in p for p in problems)
+
+
 # ---------------------------------------------------------------- png parser
 
 def test_png_chunk_property_bits():

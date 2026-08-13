@@ -90,6 +90,10 @@ Gate 里可以包含必须**失败**的判据——G4 要求 RS 与 SPA 在 LSB 
 - **参考语料**放在仓库之外。把压缩包放到 `corpus/reference/`，跑
   `scripts/register-corpus.py`，然后给 G4 或 G5 传 `--corpus real`。loader 直接读取
   zip 成员，所以 1.6 GB 的包留着别解压，省下 2.6 GB。
+- **语料漂移。** `corpus/generate.py` 会把渲染结果对照已提交的 manifest 比较，不一致
+  即失败，而不是重新锁定。PNG 摘要要过 zlib，因此跨发行版会漂移，JPEG 摘要不会。查清
+  原因之后用 `--update-manifest` 重新锁定——然后必须重跑各 gate，因为每一个阈值都是在
+  旧字节上量出来的。
 - **rustfmt** 已安装、crate 已格式化，因此 `cargo fmt --check` 的 CI 步骤是硬失败，
   不是 `continue-on-error`。缺口 G-5 已关闭：未提交的重新格式化现在会让构建失败，
   而不是发一条警告。

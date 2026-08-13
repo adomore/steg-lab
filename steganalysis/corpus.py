@@ -1,10 +1,19 @@
 """Seeded synthetic cover generation.
 
 The repository stores no binary carriers.  It stores this module plus a
-manifest of SHA-256 digests; `corpus/generate.py` reproduces the exact same
-bytes on any machine.  That keeps the repo small, sidesteps every image
+manifest of SHA-256 digests.  That keeps the repo small, sidesteps every image
 licensing question, and -- the part that actually matters for the science --
 makes "same source" a property you can prove rather than assert.
+
+The digests pin CONTAINER BYTES, and that is a narrower guarantee than it
+looks.  The rendered pixel arrays are a pure function of the spec and the
+seed, so they reproduce anywhere.  PNG bytes additionally go through zlib, so
+they reproduce only under the same compression implementation: measured across
+zlib 1.3.1 / Pillow 12.2 against the v1.0.0 manifest, all 12 JPEG covers
+matched and all 12 PNG covers did not, while their decoded pixels were
+identical.  `manifest_drift` therefore reports the recorded toolchain
+alongside the mismatch, because "the renderer changed" and "zlib changed" call
+for different responses and the digest alone cannot tell them apart.
 
 Synthetic covers are NOT a substitute for real ones.  Real sensor noise is
 what statistical detectors key on, and synthetic textures have the wrong
@@ -171,16 +180,81 @@ def write_corpus(specs: List[CoverSpec], outdir: Path) -> Dict[str, str]:
     return digests
 
 
+def toolchain() -> Dict[str, str]:
+    """The versions that determine the container bytes.
+
+    Recorded in the manifest so that a digest mismatch arrives with the one
+    piece of context needed to classify it. Without this the reader sees two
+    hex strings and has to guess whether the renderer changed or the encoder
+    did.
+    """
+    import platform
+    import zlib
+
+    import PIL
+    return {
+        "python": platform.python_version(),
+        "Pillow": PIL.__version__,
+        "zlib": zlib.ZLIB_RUNTIME_VERSION,
+    }
+
+
 def write_manifest(specs: List[CoverSpec], digests: Dict[str, str],
                    path: Path, note: Optional[str] = None) -> None:
     manifest = {
-        "note": note or ("Regenerate with scripts/regen-corpus.sh. "
-                         "Digests pin the exact bytes; a mismatch means the "
-                         "renderer or Pillow changed and the gates must be re-run."),
+        "note": note or ("Regenerate with `python3 corpus/generate.py "
+                         "--update-manifest`. Digests pin the exact container "
+                         "bytes; a mismatch means the renderer or the encoder "
+                         "changed and the gates must be re-run."),
         "specs": [asdict(s) for s in specs],
         "sha256": digests,
+        "toolchain": toolchain(),
     }
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+
+def manifest_drift(path: Path, digests: Dict[str, str]) -> List[str]:
+    """Compare freshly rendered digests against a stored manifest.
+
+    This is the check `--verify` cannot perform. `--verify` hashes the files
+    on disk against the manifest, but `generate.py` used to rewrite the
+    manifest immediately before, so the pair proved only that one run agreed
+    with itself. Drift away from the COMMITTED manifest -- the thing that
+    makes "same source" checkable across machines -- was structurally
+    invisible.
+
+    Returns a list of human-readable descriptions; empty means no drift.
+    """
+    manifest = json.loads(path.read_text())
+    stored: Dict[str, str] = manifest["sha256"]
+    problems: List[str] = []
+
+    for name in sorted(set(stored) | set(digests)):
+        want, got = stored.get(name), digests.get(name)
+        if want is None:
+            problems.append(f"{name}: rendered but absent from the manifest")
+        elif got is None:
+            problems.append(f"{name}: in the manifest but not rendered")
+        elif want != got:
+            problems.append(f"{name}: sha256 {got[:16]}... != {want[:16]}...")
+
+    if problems:
+        was = manifest.get("toolchain")
+        now = toolchain()
+        if was is None:
+            problems.append("manifest predates toolchain recording; "
+                            f"current toolchain is {_fmt_toolchain(now)}")
+        elif was != now:
+            problems.append(f"toolchain changed: {_fmt_toolchain(was)} -> "
+                            f"{_fmt_toolchain(now)}")
+        else:
+            problems.append("toolchain is UNCHANGED "
+                            f"({_fmt_toolchain(now)}), so this is the renderer")
+    return problems
+
+
+def _fmt_toolchain(t: Dict[str, str]) -> str:
+    return " ".join(f"{k} {v}" for k, v in sorted(t.items()))
 
 
 def verify_manifest(path: Path, corpus_dir: Path) -> List[str]:

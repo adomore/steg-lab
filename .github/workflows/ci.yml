@@ -28,10 +28,15 @@ jobs:
           sudo apt-get install -y -qq pngcheck libjpeg-progs steghide
       - name: install python stack
         run: pip install -r requirements.txt
+      # generate.py compares against the committed manifest rather than
+      # rewriting it, so this pair is no longer self-referential. The git check
+      # is belt and braces: it catches a future change that puts the rewrite
+      # back, or a --update-manifest that slipped into the run.
       - name: corpus is reproducible
         run: |
           python3 corpus/generate.py
           python3 corpus/generate.py --verify
+          git diff --exit-code corpus/manifest.json
       - name: pytest
         run: python3 -m pytest tests -q
 

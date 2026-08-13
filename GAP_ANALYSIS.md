@@ -78,6 +78,38 @@ it removes a one-in-three failure rate -- but the diagnosis it was built on was
 wrong, and the search that confirmed the table is what disproved the reason for
 building it.
 
+**F-70 -- a reproducibility check that verified its own output.** CI ran
+`corpus/generate.py` and then `corpus/generate.py --verify`. That reads as a
+reproducibility test and is not one: the first command rewrote the manifest, so
+the second compared the corpus against digests written seconds earlier. It
+proved a single run agreed with itself, and **by construction it could never
+detect drift away from the committed digests.**
+
+The drift was already there. Rendering under zlib 1.3.1 / Pillow 12.2 and
+comparing to the v1.0.0 manifest: **all 12 PNG covers mismatched, all 12 JPEG
+covers matched**, and the decoded pixel arrays were identical in every case.
+PNG bytes go through zlib and JPEG bytes do not, so the manifest was pinning
+the compressor as much as the renderer. The visible symptom was
+`test_lab02_zero_false_positives`, which asserts that a naive `PK\x03\x04`
+signature scan picks up chance hits inside compressed pixel data -- under a
+different zlib that count went 2 to 0.
+
+Two consequences worth separating. The statistical results are unaffected,
+because every detector works on the decoded array and those are identical. The
+claim that survives is narrower than the one the module docstring made: seeded
+generation makes the *pixels* reproducible anywhere, and the *bytes*
+reproducible only under a pinned encoder.
+
+`generate.py` now compares and fails instead of re-locking, and prints the
+recorded toolchain beside the mismatch, because "the encoder changed" and "the
+renderer changed" demand opposite responses and the digest alone cannot
+distinguish them. Re-locking is an explicit `--update-manifest`, and it obliges
+a gate re-run, since every threshold was measured on the old bytes.
+
+The shape worth remembering: **a check that writes the thing it later reads is
+not a check.** It reports green permanently, and looking green is exactly what
+stops anyone from examining it.
+
 **F-69 -- lockstep was enforced by file existence, which is not lockstep.**
 The twins checker verified that every English document had a Chinese sibling
 and stopped there. Two documents can both exist and disagree: a section added

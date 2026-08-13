@@ -105,6 +105,11 @@ pinned by SHA-256.
   `corpus/reference/`, run `scripts/register-corpus.py`, then pass
   `--corpus real` to G4 or G5. The loader reads zip members directly, so
   leave a 1.6 GB archive zipped rather than costing 2.6 GB unpacked.
+- **Corpus drift.** `corpus/generate.py` compares what it renders against the
+  committed manifest and fails on a mismatch; it does not re-lock. PNG digests
+  go through zlib and drift across distributions, JPEG digests do not. Once the
+  cause is understood, `--update-manifest` re-locks -- and the gates must then
+  be re-run, because every threshold was measured on the old bytes.
 - **rustfmt** is installed and the crate is formatted, so the `cargo fmt
   --check` CI step is a hard failure, not `continue-on-error`. Gap G-5 is
   closed: an uncommitted reformat now breaks the build rather than warning.
