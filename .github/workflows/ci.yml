@@ -1,0 +1,97 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: six documentation checkers
+        run: python3 scripts/check-docs.py
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: install reference tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq pngcheck libjpeg-progs steghide
+      - name: install python stack
+        run: pip install -r requirements.txt
+      - name: corpus is reproducible
+        run: |
+          python3 corpus/generate.py
+          python3 corpus/generate.py --verify
+      - name: pytest
+        run: python3 -m pytest tests -q
+
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: install reference tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq pngcheck libjpeg-progs steghide
+      - name: install python stack
+        run: pip install -r requirements.txt
+      # Gates are the acceptance criteria for the theory chapters. If a gate
+      # goes red the chapter is making a claim the repository cannot support,
+      # so this job blocks rather than warns.
+      - name: gate G0 (warden model)
+        run: python3 gates/g0_wardens.py
+      - name: gate G1 (structural parsing)
+        run: python3 gates/g1_parsers.py
+      - name: gate G2 (classical embedding)
+        run: python3 gates/g2_classical.py
+      # G4 includes a criterion that must FAIL to detect: LSB matching has to
+      # stay within 0.15 of chance for every shipped detector.
+      - name: gate G3 (adaptive embedding)
+        run: python3 gates/g3_adaptive.py --n 12
+      - name: gate G4 (statistical detection)
+        run: python3 gates/g4_statistical.py --n 60
+      - name: gate G5 (feature sets and ensembles)
+        run: python3 gates/g5_feature_sets.py --n 200
+      - name: gate G6 (deep learning)
+        run: python3 gates/g6_deep_learning.py --n 120 --epochs 12
+      - name: gate G7 (blind capstone)
+        run: python3 gates/g7_capstone.py --trials 24
+      - name: JPEG entropy encoder verification
+        run: python3 scripts/verify-jpeg-encoder.py --n 8
+      - name: upload gate results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-results
+          path: gates/results/
+
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: install python stack
+        run: pip install -r requirements.txt
+      - name: unit tests
+        run: cd rust/stegscan && cargo test --offline -q
+      - name: format check
+        run: cd rust/stegscan && cargo fmt --check
+      # The port is only worth having if it agrees with the reference
+      # implementation on every file, including the malformed ones.
+      - name: differential test vs python
+        run: python3 scripts/difftest.py --n 200

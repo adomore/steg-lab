@@ -1,0 +1,247 @@
+{
+  "note": "Regenerate with scripts/regen-corpus.sh. Digests pin the exact bytes; a mismatch means the renderer or Pillow changed and the gates must be re-run.",
+  "sha256": {
+    "cover_000.jpg": "dc4ffa868d3fec4cfd4571cb6b645e3d7aed5be736899521da43c2895f31b7be",
+    "cover_000.png": "d3839d91b0eb9bede31da44f6c0f3964389deea59ef99f1952f2935f84ef02c9",
+    "cover_001.jpg": "2a2eb16da9fa3709035a173d188c8e968eec58d042f63cd3c0d3bf1d002b30b2",
+    "cover_001.png": "6afdad4017039055d0a46a911df9ad4027907f0e77246f112a88bf34defd4a5b",
+    "cover_002.jpg": "47501b3760a3cf5325e1d27909c1c4797e1ca3b3b0f460877022aceb63831c05",
+    "cover_002.png": "588ab4bd654f1352fd3099505d3ce0acd49551ff42dc5f6eebfa581a15840389",
+    "cover_003.jpg": "633a68b22374a6535fc13642ec0a90f1835d73235b2b9f1866fcbb78e31ac438",
+    "cover_003.png": "852f349ce057077d46dfe3c6492406e210f901ad771fd5c368611050ab0fcf89",
+    "cover_004.jpg": "8ca4c05908373bee67d57e5c75d46d71b8d4d570b21143ad84589d49769810f4",
+    "cover_004.png": "d10b840b600ba6c3ab4db74ce339f8d2047714be00b86164ac3ded4ae4cf569d",
+    "cover_005.jpg": "08e69e9d60e5bf64e6e25c1c0a34675cc9464dfb888c3aa9508f7551312762e3",
+    "cover_005.png": "803061b8dfd40a4070f00b86d91436d6588c4dc18776d00ab1d66f213e0ec8cf",
+    "cover_006.jpg": "c13fa6cfc9961c9e47b4eb239ecb0489f12695ecb180a061f4ac282aa8095186",
+    "cover_006.png": "416feb4b1966225f4861aba4b4081d356a5ddbbb1351cc775974c810065f65bc",
+    "cover_007.jpg": "cebecb46de8ec83d2d218126005fd369e3f5707a18809b5cca4c7ffab8205a9e",
+    "cover_007.png": "111727908f98f3b201253df70c12adf481b5ec56ac1f9ce5891e4fd07f61683b",
+    "cover_008.jpg": "105f01f612f5613e29b85d2ed45543757942d4a92d71cc9b58338ecd3dec573a",
+    "cover_008.png": "91df6f511f241d083597431527bf65cc0de991f36474d930832d0f3a2133bbc6",
+    "cover_009.jpg": "e6fa19efe0e5b35d20e74aa51c83d4a75a17c0920cc23daf308cc4c85d36b38c",
+    "cover_009.png": "991e3ff92a06eb691d42d07c670f2fa3dcc5c9ffa50b21eaca95eade57d95d81",
+    "cover_010.jpg": "2b1d628b5a6434840fe09c618108f3349c44c7455342c652e7bd0c2a346ba9dc",
+    "cover_010.png": "234ad302ec758bc381fc98006085584bad10d88b2326c81611797f95c963a583",
+    "cover_011.jpg": "67ead45d6d6cb9ebc6f421cf3309d2c372609eee73214f766d0a632b5150af13",
+    "cover_011.png": "58e64916f1fe71ee10d1d88d01369c625696d74b839d5640545126f138f7030a"
+  },
+  "specs": [
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "gradient",
+      "name": "cover_000.png",
+      "quality": 90,
+      "seed": 1000,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "texture",
+      "name": "cover_001.png",
+      "quality": 90,
+      "seed": 1001,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "photo_like",
+      "name": "cover_002.png",
+      "quality": 90,
+      "seed": 1002,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "flat",
+      "name": "cover_003.png",
+      "quality": 90,
+      "seed": 1003,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "gradient",
+      "name": "cover_004.png",
+      "quality": 90,
+      "seed": 1004,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "texture",
+      "name": "cover_005.png",
+      "quality": 90,
+      "seed": 1005,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "photo_like",
+      "name": "cover_006.png",
+      "quality": 90,
+      "seed": 1006,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "flat",
+      "name": "cover_007.png",
+      "quality": 90,
+      "seed": 1007,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "gradient",
+      "name": "cover_008.png",
+      "quality": 90,
+      "seed": 1008,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "texture",
+      "name": "cover_009.png",
+      "quality": 90,
+      "seed": 1009,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "photo_like",
+      "name": "cover_010.png",
+      "quality": 90,
+      "seed": 1010,
+      "width": 256
+    },
+    {
+      "fmt": "png",
+      "height": 192,
+      "kind": "flat",
+      "name": "cover_011.png",
+      "quality": 90,
+      "seed": 1011,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "gradient",
+      "name": "cover_000.jpg",
+      "quality": 75,
+      "seed": 2000,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "texture",
+      "name": "cover_001.jpg",
+      "quality": 85,
+      "seed": 2001,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "photo_like",
+      "name": "cover_002.jpg",
+      "quality": 90,
+      "seed": 2002,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "flat",
+      "name": "cover_003.jpg",
+      "quality": 95,
+      "seed": 2003,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "gradient",
+      "name": "cover_004.jpg",
+      "quality": 75,
+      "seed": 2004,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "texture",
+      "name": "cover_005.jpg",
+      "quality": 85,
+      "seed": 2005,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "photo_like",
+      "name": "cover_006.jpg",
+      "quality": 90,
+      "seed": 2006,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "flat",
+      "name": "cover_007.jpg",
+      "quality": 95,
+      "seed": 2007,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "gradient",
+      "name": "cover_008.jpg",
+      "quality": 75,
+      "seed": 2008,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "texture",
+      "name": "cover_009.jpg",
+      "quality": 85,
+      "seed": 2009,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "photo_like",
+      "name": "cover_010.jpg",
+      "quality": 90,
+      "seed": 2010,
+      "width": 256
+    },
+    {
+      "fmt": "jpeg",
+      "height": 192,
+      "kind": "flat",
+      "name": "cover_011.jpg",
+      "quality": 95,
+      "seed": 2011,
+      "width": 256
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+[package]
+name = "stegscan"
+version = "0.1.0"
+edition = "2021"
+description = "Container-level steganalysis triage at scale"
+license = "MIT OR Apache-2.0"
+
+# No dependencies, deliberately. The crate must build on a machine with no
+# network and no registry cache, because the first thing a forensic
+# workstation loses is internet access.
+[dependencies]
+
+[profile.release]
+opt-level = 3
+lto = true

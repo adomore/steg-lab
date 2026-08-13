@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+corpus/generated/
+corpus/reference/
+gates/results/
+rust/stegscan/target/
+reference/
+*.tar.gz
+.venv/
