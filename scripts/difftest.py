@@ -33,16 +33,39 @@ from steganalysis import corpus, jpeg as jpeg_mod, png as png_mod  # noqa: E402
 CRATE = ROOT / "rust" / "stegscan"
 
 
-def build_scanner() -> Path | None:
+def find_binary(target_dir: Path) -> Path | None:
+    """The built scanner, under whichever name this platform produces.
+
+    Windows emits `stegscan.exe`. Looking only for the extensionless name made
+    a machine with a working toolchain, on which cargo had just built the
+    crate successfully, report that cargo was unavailable.
+    """
+    for name in ("stegscan", "stegscan.exe"):
+        candidate = target_dir / name
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def build_scanner() -> tuple[Path | None, str]:
+    """Locate the release binary, or say precisely why it is unreachable.
+
+    Three different failures used to collapse into one message, and they call
+    for different responses: no toolchain is something to install, a failed
+    build is a compile error to read, and a missing binary under a target
+    directory that exists is a broken path assumption in this script.
+    """
     if shutil.which("cargo") is None:
-        return None
+        return None, "cargo is not on PATH"
     proc = subprocess.run(["cargo", "build", "--release", "--offline", "-q"],
                           cwd=CRATE, capture_output=True, text=True)
     if proc.returncode != 0:
-        print(proc.stderr, file=sys.stderr)
-        return None
-    binary = CRATE / "target" / "release" / "stegscan"
-    return binary if binary.exists() else None
+        return None, f"cargo build failed:\n{proc.stderr.rstrip()}"
+    target = CRATE / "target" / "release"
+    binary = find_binary(target)
+    if binary is None:
+        return None, f"cargo build succeeded but no stegscan binary under {target}"
+    return binary, ""
 
 
 def python_view(path: Path) -> Dict:
@@ -139,11 +162,19 @@ def main() -> int:
     ap.add_argument("--bench", action="store_true")
     args = ap.parse_args()
 
-    binary = build_scanner()
+    binary, why = build_scanner()
     if binary is None:
-        print("SKIP: cargo or the stegscan binary is unavailable.")
-        print("      Install a Rust toolchain, or run scripts/setup-kali.sh.")
-        return 0
+        print("DIFFTEST: NOT RUN")
+        print(f"  reason: {why}")
+        print()
+        print("  The port's only justification is that it agrees with the Python")
+        print("  reference on every file. A run that could not make that")
+        print("  comparison has not made it, so this exits non-zero rather than")
+        print("  reporting the same success as a run that did. That is F-52")
+        print("  applied to this script: a skipped check must not read as a")
+        print("  passing one.")
+        print("  Fix: install a Rust toolchain, or run scripts/setup-kali.sh.")
+        return 2
 
     with tempfile.TemporaryDirectory() as td:
         work = Path(td)

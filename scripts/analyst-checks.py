@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """Run the checks that need a real machine, and print a verdict for each.
 
-Four gaps in GAP_ANALYSIS.md cannot be closed in the build container: they
+Some gaps in GAP_ANALYSIS.md cannot be settled in the build container: they
 need a Kali box, a corpus download, or more compute than a sandbox turn allows.
 This runs whichever of them the local machine can support, skips the rest with
 a reason, and prints one block per gap that can be pasted back as-is.
+
+G-8, G-11 and G-21 are closed and stay here as regression checks -- each was
+closed by a measurement, and a measurement that is never repeated is a claim
+again. G-12 and G-18 are the ones still open, both waiting on a larger real
+corpus. F-60 is why they are registered at all: a gap blocked on an external
+dependency should be re-run when that dependency lands, and nothing else in
+this repository prompts that. G-12 stayed open for rounds after BOSSbase
+arrived simply because no one went back to look.
 
 Usage:
     python3 scripts/analyst-checks.py              # everything available
@@ -135,6 +143,53 @@ def check_g11() -> None:
         print("at reconstructing the estimator.")
 
 
+def check_g12() -> None:
+    header("G-12", "is calibrated HCF-COM good enough to register yet?")
+    from steganalysis import reference
+    from steganalysis.detectors import calibrated_hcf_com_UNVALIDATED
+    from steganalysis.embedders import lsb_matching
+
+    corpus = reference.load_registered()
+    if corpus is None or not len(corpus):
+        print("SKIP: no reference corpus registered.")
+        print("Run: bash scripts/get-corpora.sh, then")
+        print("     python3 scripts/register-corpus.py")
+        return
+
+    import numpy as np
+    covers = list(corpus.sample(60, seed=1212))
+    rows = []
+    for rate in (0.25, 0.5, 1.0):
+        clean, stego = [], []
+        for i, cover in enumerate(covers):
+            clean.append(calibrated_hcf_com_UNVALIDATED(cover).value)
+            stego.append(calibrated_hcf_com_UNVALIDATED(
+                lsb_matching(cover, rate, seed=i).stego).value)
+        # AUC by rank, so no sklearn dependency in a script an analyst runs.
+        order = np.argsort(clean + stego, kind="mergesort")
+        ranks = np.empty(len(order), dtype=float)
+        ranks[order] = np.arange(1, len(order) + 1)
+        n = len(clean)
+        auc = (ranks[n:].sum() - n * (n + 1) / 2) / (n * n)
+        rows.append((rate, float(auc)))
+        print(f"  {rate:>4} bpp   n={n:<4} AUC {auc:.3f}")
+
+    print()
+    print("  The question G-12 answered was WHY it read as chance: the corpus,")
+    print("  not the implementation. Calibration by down-sampling assumes")
+    print("  natural-image statistics that synthetic covers do not have. What")
+    print("  is left is whether a real corpus makes it good enough to ship.")
+    print()
+    best = max(a for _, a in rows)
+    if best >= 0.80:
+        print(f"VERDICT: REGISTER IT (best AUC {best:.3f}). Add it to DETECTORS,")
+        print("drop the _UNVALIDATED suffix, and give it a gate G4 criterion.")
+    else:
+        print(f"VERDICT: STILL BELOW THE BAR (best AUC {best:.3f}). It stays out")
+        print("of DETECTORS. A registry listing an estimator nobody validated is")
+        print("how unvalidated numbers reach a report.")
+
+
 def check_g18() -> None:
     header("G-18", "second acquisition pipeline")
     from steganalysis import reference
@@ -187,8 +242,8 @@ def check_g21() -> None:
     print("VERDICT: ready to run; paste criterion D's block back.")
 
 
-CHECKS = {"G-8": check_g8, "G-11": check_g11, "G-18": check_g18,
-          "G-21": check_g21}
+CHECKS = {"G-8": check_g8, "G-11": check_g11, "G-12": check_g12,
+          "G-18": check_g18, "G-21": check_g21}
 
 
 def main() -> int:

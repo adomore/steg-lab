@@ -19,9 +19,9 @@ prerequisite recorded. **Needs sign-off.**
 |---|---|---|---|
 | G-1 | CLOSED, all three filesystems. FAT file slack, ext4 file slack and NTFS alternate data streams all work through one lab interface, and none needs mount privileges: `mkfs.vfat`/`mtools`, `mkfs.ext4`/`debugfs` and `mkntfs`/`ntfscp` build and populate images as files. Cross-checked against mdir, debugfs and ntfscat respectively. A resident ADS reaches E4 with the payload; a non-resident one stops at E3, found but not recoverable from the MFT record alone | -- | -- |
 | G-2 | CLOSED for images: `docs/cases/stegomalware.md` covers Duqu, Zeus/Zbot, Gatak/Stegoloader and Worok, organised by carrier with a detection-attribution table per section, sourced inline | -- | one narrative per remaining carrier group as those labs land |
-| G-3 | No statistical detector of any kind | by design | P1, stage 3 |
+| G-3 | CLOSED: `DETECTORS` registers chi-square, RS, Weighted Stego and Sample Pair Analysis. Gate G4 grades the first three and G-11 records SPA's measurements. This row described the P0 state and outlived it -- P1 shipped these detectors and MAINTAINERS has read "P1 -- done" ever since | -- | -- |
 | G-4 | CLOSED for G4 and G5: both gates now run on BOSSbase 1.01 (10,000 files, lag-1 correlation 0.931). Absolute figures are no longer provisional | -- | `--corpus real`. Still open for G3's security claim (G-15) and for ALASKA2 in the JPEG domain |
-| G-18 | PARTLY CLOSED. Processing shift: `reference.PIPELINES` plus G5's `--all-pipelines`, already measured. Acquisition shift: `reference.second_source()` supplies scikit-image's sample photographs, which share no pipeline with BOSSbase -- different decades, sensors and scanners -- and ship with the toolchain, so G5 criterion D1 now includes a genuine second acquisition chain. Seven usable 256px crops makes the figure coarse; ALASKA2 would make it precise | low | ALASKA2, for sample size rather than for kind |
+| G-18 | PARTLY CLOSED. Processing shift: `reference.PIPELINES` plus G5's `--all-pipelines`, already measured. Acquisition shift: `reference.second_source()` supplies scikit-image's sample photographs, which share no pipeline with BOSSbase -- different decades, sensors and scanners -- and ship with the toolchain, so G5 criterion D1 now includes a genuine second acquisition chain. Seven usable 256px crops makes the figure coarse; ALASKA2 would make it precise | low | ALASKA2, for sample size rather than for kind. Parked in `scripts/analyst-checks.py --only G-18`, which looks for the drop and reports what is still missing |
 | G-15 | CLOSED on real BOSSbase: HILL+STC reaches P_E 0.344 against LSB matching's 0.198 at 0.4 bpp, a security gain of 0.146 | -- | gate G3 criterion E, graded |
 | G-16 | PARTLY CLOSED and re-diagnosed. A searched, held-out-validated submatrix table now supplies h=8/10/12 at w=2, which removed the no-valid-path failures (21 of 72 random draws). It did NOT close the gap: among valid candidates best and median differ by ~1 point. The claim that a poor submatrix is the binding constraint was wrong -- see G-22 | low | `scripts/search-submatrices.py` regenerates the table |
 | G-22 | CLOSED by keying the embedding path (F-37). The mechanism was raster-order traversal of spatially clustered costs: the trellis has a lookahead of h, texture is spatially clustered, so on a cover whose left half is flat the syndrome forces flips onto elements costing many times the median. `path_permutation` interleaves cheap and expensive elements and G3 criterion B now reads 5.98% at h=12, inside the published 5-10% band. Four earlier sub-hypotheses -- poor submatrices, cost dynamic range itself, wet paper codes, submatrix quality at other widths -- are all consequences of the ordering | -- | -- |
@@ -34,9 +34,9 @@ prerequisite recorded. **Needs sign-off.**
 | G-7 | CLOSED: `Ihdr.expected_raw_size` and `height_for_raw_size` handle Adam7's seven passes, and lab 04 detects and recovers height truncation on interlaced PNGs. Verified against a real interlaced carrier built by `png.encode_adam7`, because Pillow here ignores its `interlace` argument and would have silently tested the flat path | -- | -- |
 | G-8 | CLOSED: run on Kali 2026.x, `verify-toolchain` reports 21 ok, 0 failed, 0 skipped with every reference implementation present and working. `dosfstools`/`mtools` added to the installer (lab 23 shipped without them); the stale note claiming stegseek is unpackaged in Kali corrected -- `apt install stegseek` works | -- | -- |
 | G-9 | CLOSED, all carriers. Palette: lab 10 (EzStego), 0/24 false positives, E4. Audio: lab 18, RIFF parser cross-validated against the stdlib `wave` module, 0/16 at both bit depths. Text: lab 20, three channels, 0/8 on a legitimate multilingual corpus. Network: lab 21, three covert channels, 12/12 each against 0/12. Video: lab 22, temporal LSB consistency, 8/8 against 0/8, cross-validated against ffmpeg pixel-for-pixel | -- | -- |
-| G-10 | The Rust sideline covers triage only; no statistical kernels | by design | P2 |
+| G-10 | The Rust sideline covers triage only; no statistical kernels. Still true and still deliberate: F-5 measured the port at 4.0x rather than the order of magnitude people assume, because container triage is I/O and slicing and both are already C inside CPython | by design | standing, not pending. The Plan column read "P2" long after P2 shipped without it. The statistical layer is where a port could actually pay, and that case has to be made by measurement rather than by the belief that Rust is fast |
 | G-11 | CLOSED. Sample Pair Analysis implemented from Dumitrescu, Wu and Wang (IEEE TSP 51(7), 2003), equation (18), and registered in DETECTORS. Synthetic covers, true p against estimate: 0.00->0.018, 0.05->0.048, 0.10->0.091, 0.20->0.208, 0.40->0.391; real photographs, mean error +0.008 to +0.020 against the 0.023 the paper reports. Correctly flat on LSB matching (0.020 clean, 0.024 at 0.4 bpp), which is the same required failure as RS and Weighted Stego | -- | -- |
-| G-12 | ANSWERED: it was the corpus, not the implementation. Calibrated HCF-COM against LSB matching, AUC at 0.25/0.5/1.0 bpp -- synthetic covers 0.531/0.540/0.510, real photographs 0.543/0.565/**0.705**. The two-dimensional adjacency form Ker actually specifies adds a further increment (0.587/0.667/0.735) but is not the main effect. Calibration by down-sampling assumes natural-image statistics; the synthetic corpus does not have them, which is the same limitation that cost the statistical detectors their low-payload sensitivity in F-17 | low | still below the bar for the registry; a larger real corpus would fix the sample size |
+| G-12 | ANSWERED: it was the corpus, not the implementation. Calibrated HCF-COM against LSB matching, AUC at 0.25/0.5/1.0 bpp -- synthetic covers 0.531/0.540/0.510, real photographs 0.543/0.565/**0.705**. The two-dimensional adjacency form Ker actually specifies adds a further increment (0.587/0.667/0.735) but is not the main effect. Calibration by down-sampling assumes natural-image statistics; the synthetic corpus does not have them, which is the same limitation that cost the statistical detectors their low-payload sensitivity in F-17 | low | `scripts/analyst-checks.py --only G-12` re-measures it and prints a register/do-not-register verdict, so the answer arrives when a larger corpus does. Still below the bar for `DETECTORS` today |
 | G-13 | CLOSED in P2: SPAM686 + FLD ensemble reaches P_E 0.140 vs LSB matching | -- | gate G5 |
 | G-14 | CLOSED in P2b: baseline entropy encoder with optimal Huffman tables, round trip coefficient-exact | -- | `scripts/verify-jpeg-encoder.py` |
 
@@ -77,6 +77,34 @@ magnifies a single forced expensive flip. The table still earned its place --
 it removes a one-in-three failure rate -- but the diagnosis it was built on was
 wrong, and the search that confirmed the table is what disproved the reason for
 building it.
+
+**F-72 -- the gap table carried a row its own code had disproved for three
+phases.** G-3 read "No statistical detector of any kind" with plan "P1, stage
+3". `DETECTORS` has registered chi-square, RS and Weighted Stego since P1 and
+Sample Pair Analysis since G-11 closed; gate G4 grades three of them by name
+and has been green in CI. MAINTAINERS has said "P1 -- done" the whole time.
+
+The mechanism is the one F-61 named, at a longer range. A gap row gets updated
+when someone is working on **that gap**. G-3 was never worked on again -- it
+was delivered, and delivering it is precisely what stopped anyone from opening
+the row. **The rows most likely to be stale are the ones nobody has a reason to
+revisit, which is the opposite of the ones a reader distrusts.**
+
+G-10 was the same shape with the damage in a different column. Its claim -- the
+Rust sideline is triage only -- is still true, and the crate still contains no
+statistical symbol. Its Plan column read "P2", long after P2 shipped without
+it. A reader following the Plan column would have gone looking for unfinished
+work that was never planned: F-5 measured the port at 4.0x rather than an order
+of magnitude, so triage is the part a port does not pay for.
+
+**A "by design" severity and a phase number in the Plan column contradict each
+other**, and the table let both stand for three phases.
+
+The two genuinely open rows were fine, and the fix for them was registration
+rather than prose. G-18 was already parked in `analyst-checks.py`; G-12 was
+not, despite F-60 recording that exact omission -- G-12 stayed open for rounds
+after BOSSbase arrived because a satisfied precondition does not announce
+itself. It is registered now, with a verdict that says register or do not.
 
 **F-71 -- the repository's own checker produced twelve false alarms in the
 repository's own CI, on the first run it ever got.** The `docs` job did

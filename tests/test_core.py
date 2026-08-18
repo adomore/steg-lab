@@ -155,6 +155,21 @@ def test_manifest_drift_tolerates_a_manifest_without_a_toolchain(tmp_path):
     assert any("predates toolchain recording" in p for p in problems)
 
 
+
+def test_difftest_finds_the_binary_under_either_platform_name(tmp_path):
+    """Windows emits stegscan.exe; looking only for the bare name reported
+    that cargo was unavailable on a machine that had just built the crate."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import importlib
+    difftest = importlib.import_module("difftest")
+
+    assert difftest.find_binary(tmp_path) is None
+    (tmp_path / "stegscan.exe").write_bytes(b"")
+    assert difftest.find_binary(tmp_path).name == "stegscan.exe"
+    (tmp_path / "stegscan").write_bytes(b"")
+    assert difftest.find_binary(tmp_path).name == "stegscan"
+
+
 # ---------------------------------------------------------------- png parser
 
 def test_png_chunk_property_bits():
