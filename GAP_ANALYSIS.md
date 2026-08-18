@@ -78,6 +78,35 @@ it removes a one-in-three failure rate -- but the diagnosis it was built on was
 wrong, and the search that confirmed the table is what disproved the reason for
 building it.
 
+**F-71 -- the repository's own checker produced twelve false alarms in the
+repository's own CI, on the first run it ever got.** The `docs` job did
+checkout, set up Python, and run `check-docs.py` -- with no `pip install`. The
+commands checker validates a documented flag by running the script with
+`--help`, so every gate died on `import numpy` before argparse could print
+anything, the checker read the traceback as the help text, and it reported 12
+flags as missing. One of them was `corpus/generate.py --verify`, which has
+existed since v1.0.0.
+
+This is **F-54 exactly**, now committed rather than caught: a validator that
+greps a tool's output and fails for a reason that has nothing to do with what
+it validates. The repository already knows the lesson and still shipped it,
+because nothing had ever run this job -- the project had no git remote until
+now, so its CI had never executed once.
+
+Both failures the first run surfaced reproduce on the `v1.0.0` tag, which is
+how they were shown to predate the changes being tested. Worth keeping as a
+habit: **a CI configuration that has never run is not a check, it is a
+proposal.**
+
+The second failure was the mirror image. `check-crossval.py` exits non-zero
+when a cross-validation would be silently skipped, and a test requires it to
+succeed -- so it is a gate, while CI installed three of the six tools it
+probes. Filling the toolchain in was chosen over softening the exit code,
+because the point of the script is that a skipped cross-validation must not
+read as a passing one. The same sweep found `e2fsprogs` and `ntfs-3g` missing
+from `setup-kali.sh`: the ext4 and NTFS filesystems were added after G-8
+recorded that omission for `dosfstools`/`mtools`, and inherited it.
+
 **F-70 -- a reproducibility check that verified its own output.** CI ran
 `corpus/generate.py` and then `corpus/generate.py --verify`. That reads as a
 reproducibility test and is not one: the first command rewrote the manifest, so

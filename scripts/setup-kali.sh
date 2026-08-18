@@ -44,8 +44,10 @@ APT_PKGS=(
   binwalk foremost bulk-extractor libimage-exiftool-perl
   # image, audio and capture handling
   imagemagick ffmpeg sox tshark
-  # lab 23 builds and writes FAT volumes; without these its tests SKIP
-  dosfstools mtools
+  # lab 23 builds and writes FAT, ext4 and NTFS volumes; without these its
+  # tests SKIP while the suite still reports green -- the same omission G-8
+  # recorded for dosfstools/mtools, in the two filesystems added after it
+  dosfstools mtools e2fsprogs ntfs-3g
   # archives, hex, general
   p7zip-full unzip zip vim-common file
   # build prerequisites for source-built tools

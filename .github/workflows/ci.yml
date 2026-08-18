@@ -12,6 +12,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      # The commands checker validates documented flags by running each script
+      # with --help. Without the runtime dependencies every gate dies on import,
+      # the checker reads an empty help text, and it reports 12 flags as
+      # missing -- including ones that plainly exist. A validator that fails
+      # for environmental reasons is F-54 again, in this repo's own CI.
+      - name: install python stack
+        run: pip install -r requirements.txt
       - name: six documentation checkers
         run: python3 scripts/check-docs.py
 
@@ -22,12 +29,26 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      # check-crossval.py exits non-zero when a cross-validation would be
+      # silently skipped, and tests/test_getting_started.py requires it to
+      # succeed. That makes it a gate, so this job carries every tool it probes
+      # -- pngcheck, djpeg, tshark, ffmpeg, mkfs.vfat, mcopy -- rather than
+      # only the three the gates shell out to. e2fsprogs and ntfs-3g are here
+      # for lab 23: they are not probed, but without them the ext4 and NTFS
+      # cross-validations skip while the suite still reports green (F-52).
+      # tshark's postinst asks a debconf question about non-root capture, so
+      # the frontend has to be noninteractive or the install blocks.
       - name: install reference tools
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq pngcheck libjpeg-progs steghide
+          sudo apt-get install -y -qq tshark ffmpeg dosfstools mtools e2fsprogs ntfs-3g
       - name: install python stack
         run: pip install -r requirements.txt
+      - name: no cross-validation is silently skipped
+        run: python3 scripts/check-crossval.py
       # generate.py compares against the committed manifest rather than
       # rewriting it, so this pair is no longer self-referential. The git check
       # is belt and braces: it catches a future change that puts the rewrite
