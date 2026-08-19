@@ -108,3 +108,70 @@ def test_translated_heading_text_does_not_count_as_drift(tmp_path):
     write_pair(tmp_path, "doc", ALIGNED_EN,
                ALIGNED_ZH.replace("## 一", "## 完全不同的标题文字"))
     assert load_checker(tmp_path).check_twins() == []
+
+
+# ------------------------------------------- the single-language exemption
+
+MARKED_SOLO = """<!-- twins:single-language a stated reason -->
+# Solo
+"""
+
+UNMARKED_SOLO = """# Solo
+"""
+
+REASONLESS_SOLO = """<!-- twins:single-language -->
+# Solo
+"""
+
+ZH_WITH_EXTRA_SECTION = ALIGNED_ZH + """
+## 只在中文里
+
+多出来的一节。
+"""
+
+
+def test_a_marked_single_language_document_needs_no_translation(tmp_path):
+    """The GitHub landing page is Chinese on purpose and links to the English
+    README. A translation pair of one language into itself is not a thing."""
+    (tmp_path / "solo.md").write_text(MARKED_SOLO, encoding="utf-8")
+    assert load_checker(tmp_path).check_twins() == []
+
+
+def test_an_unmarked_single_language_document_is_still_caught(tmp_path):
+    """The exemption must be opt-in, or it is not a rule any more."""
+    (tmp_path / "solo.md").write_text(UNMARKED_SOLO, encoding="utf-8")
+    problems = load_checker(tmp_path).check_twins()
+    assert any("no Chinese sibling" in p[1] for p in problems)
+
+
+def test_the_marker_needs_a_reason(tmp_path):
+    """An exemption with no reason is a bare override, and overrides get
+    copied to the next file by someone who never learns why."""
+    (tmp_path / "solo.md").write_text(REASONLESS_SOLO, encoding="utf-8")
+    problems = load_checker(tmp_path).check_twins()
+    assert any("no Chinese sibling" in p[1] for p in problems)
+
+
+def test_the_marker_cannot_silence_drift_between_real_twins(tmp_path):
+    """The escape hatch must not become a way to mute the checker.
+
+    It applies only where the sibling is genuinely absent. A document that HAS
+    a sibling is still structure-compared, marker or no marker -- otherwise the
+    cheapest way to green a red build would be to paste the marker in.
+    """
+    write_pair(tmp_path, "doc", MARKED_SOLO + ALIGNED_EN, ZH_WITH_EXTRA_SECTION)
+    problems = load_checker(tmp_path).check_twins()
+    assert any("section structure differs" in p[1] for p in problems)
+
+
+def test_a_single_language_document_is_in_neither_pairing_count(tmp_path):
+    """docs_en and docs_zh exist to express the pairing invariant. An exempt
+    page counted in docs_en makes the two disagree, which reads as translation
+    drift when none has happened."""
+    write_pair(tmp_path, "doc", ALIGNED_EN, ALIGNED_ZH)
+    (tmp_path / "solo.md").write_text(MARKED_SOLO, encoding="utf-8")
+    for sub in ("labs", "gates", "tests"):
+        (tmp_path / sub).mkdir(exist_ok=True)
+    (tmp_path / "docs" / "theory").mkdir(parents=True, exist_ok=True)
+    facts = load_checker(tmp_path).repo_facts()
+    assert facts["docs_en"] == facts["docs_zh"] == 1

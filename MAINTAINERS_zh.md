@@ -90,6 +90,10 @@ Gate 里可以包含必须**失败**的判据——G4 要求 RS 与 SPA 在 LSB 
 - **参考语料**放在仓库之外。把压缩包放到 `corpus/reference/`，跑
   `scripts/register-corpus.py`，然后给 G4 或 G5 传 `--corpus real`。loader 直接读取
   zip 成员，所以 1.6 GB 的包留着别解压，省下 2.6 GB。
+- **GitHub 落地页。** GitHub 优先渲染 `.github/README.md` 而不是根目录那份，所以
+  访客看到的是那一页中文，根 `README.md` 保持英文。它靠自己首行的标记豁免于中英
+  配对规则。页面上的计数打了 `claim:` 标签因而受检查，但那张实测结果摘录是从
+  `README_zh.md` 手抄的——要改就两边一起改，否则宁可把摘录删掉，别让它变陈旧。
 - **语料漂移。** `corpus/generate.py` 会把渲染结果对照已提交的 manifest 比较，不一致
   即失败，而不是重新锁定。PNG 摘要要过 zlib，因此跨发行版会漂移，JPEG 摘要不会。查清
   原因之后用 `--update-manifest` 重新锁定——然后必须重跑各 gate，因为每一个阈值都是在

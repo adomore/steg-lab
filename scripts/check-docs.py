@@ -115,6 +115,29 @@ def _table_rows(path: Path) -> int:
     return count
 
 
+#: A document may opt out of the pairing rule, but only by saying so in its own
+#: text and giving a reason. The one case today is a platform landing page:
+#: GitHub renders .github/README.md for visitors, this project's readers are
+#: Chinese-speaking, and that page links to the English README rather than
+#: duplicating it -- a translation pair of one language into itself is not a
+#: thing. An exemption written in the file is visible to whoever edits the
+#: file; one kept in a SKIP list somewhere else is not.
+#:
+#: Deliberately narrow: it applies ONLY when the sibling is genuinely absent.
+#: A file that HAS a sibling is still structure-compared, marker or no marker,
+#: so this cannot be used to silence the drift the checker exists to catch.
+TWINS_EXEMPT_MARKER = "<!-- twins:single-language"
+
+
+def single_language_reason(path: Path) -> str:
+    """The stated reason a document has no translation, or "" if none."""
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith(TWINS_EXEMPT_MARKER) and stripped.endswith("-->"):
+            return stripped[len(TWINS_EXEMPT_MARKER):-3].strip()
+    return ""
+
+
 def check_twins() -> List[Problem]:
     """Both halves exist AND say the same things in the same order.
 
@@ -141,7 +164,8 @@ def check_twins() -> List[Problem]:
 
         twin = rel.with_name(name[:-3] + "_zh.md")
         if twin not in files:
-            problems.append((str(rel), f"no Chinese sibling {twin.name}"))
+            if not single_language_reason(ROOT / rel):
+                problems.append((str(rel), f"no Chinese sibling {twin.name}"))
             continue
 
         en_headings = _section_headings(ROOT / rel)
@@ -213,8 +237,13 @@ def repo_facts() -> Dict[str, int]:
     tests = 0
     for t in (ROOT / "tests").glob("test_*.py"):
         tests += len(re.findall(r"^def test_", t.read_text(encoding="utf-8"), re.M))
-    en = [p for p in markdown_files() if not p.name.endswith("_zh.md")]
-    zh = [p for p in markdown_files() if p.name.endswith("_zh.md")]
+    # docs_en and docs_zh exist to express the pairing invariant, so a document
+    # that opted out of pairing belongs in neither count. Without this a
+    # single-language page inflates docs_en and the two numbers stop matching,
+    # which reads as translation drift when none has happened.
+    paired = [p for p in markdown_files() if not single_language_reason(p)]
+    en = [p for p in paired if not p.name.endswith("_zh.md")]
+    zh = [p for p in paired if p.name.endswith("_zh.md")]
     return {
         "labs": len(labs),
         "theory_chapters": len([t for t in theory if not t.name.endswith("_zh.md")]),

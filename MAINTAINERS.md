@@ -105,6 +105,12 @@ pinned by SHA-256.
   `corpus/reference/`, run `scripts/register-corpus.py`, then pass
   `--corpus real` to G4 or G5. The loader reads zip members directly, so
   leave a 1.6 GB archive zipped rather than costing 2.6 GB unpacked.
+- **The GitHub landing page.** GitHub renders `.github/README.md` in preference
+  to the root one, so that file is the Chinese page visitors see and the root
+  `README.md` stays English. It is exempt from the pairing rule by a marker in
+  its own first line. Its counts are `claim:` tagged and therefore checked, but
+  its results excerpt is copied by hand from `README_zh.md` -- update both, or
+  drop the excerpt rather than let it go stale.
 - **Corpus drift.** `corpus/generate.py` compares what it renders against the
   committed manifest and fails on a mismatch; it does not re-lock. PNG digests
   go through zlib and drift across distributions, JPEG digests do not. Once the
