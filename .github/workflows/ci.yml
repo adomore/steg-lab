@@ -38,12 +38,21 @@ jobs:
       # cross-validations skip while the suite still reports green (F-52).
       # tshark's postinst asks a debconf question about non-root capture, so
       # the frontend has to be noninteractive or the install blocks.
+      #
+      # timeout-minutes is a hang detector, not a performance budget, and it is
+      # set from the measured spread rather than from one sample. This step has
+      # taken 48s, 5m19s and 15m09s across successful runs -- ffmpeg and tshark
+      # pull a lot -- while the observed hangs ran 25 and 58 minutes. A first
+      # attempt at 10 minutes was picked from a single fast observation and
+      # failed a run whose install was merely slow. Leave headroom: a false
+      # failure here trains people to re-run without reading, which costs more
+      # than catching a hang ten minutes later.
       # exiftool is not probed by check-crossval either, but
       # tests/test_tool_practice.py gates on it: that file publishes the tool
       # behaviours the docs assert (F-66), and a skipped assertion about a
       # tool is how the docs go stale without the build noticing.
       - name: install reference tools
-        timeout-minutes: 10
+        timeout-minutes: 25
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
@@ -80,9 +89,11 @@ jobs:
       # had passed here on four earlier runs, so a runner image roll most
       # likely introduced a package that now prompts. timeout-minutes turns a
       # hang into a failure that reports, rather than one that occupies a
-      # runner until the six-hour ceiling.
+      # runner until the six-hour ceiling. This job's install measures 9s to
+      # 1m38s when healthy, so 25 minutes is pure headroom; it shares the test
+      # job's value so there is one number to reason about.
       - name: install reference tools
-        timeout-minutes: 10
+        timeout-minutes: 25
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
