@@ -43,6 +43,7 @@ jobs:
       # behaviours the docs assert (F-66), and a skipped assertion about a
       # tool is how the docs go stale without the build noticing.
       - name: install reference tools
+        timeout-minutes: 10
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
@@ -73,7 +74,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      # Same treatment as the test job. This step hung twice for tens of
+      # minutes on 2026-08-19 while the test job's larger install, which
+      # differed only by the frontend setting, completed in the same run. It
+      # had passed here on four earlier runs, so a runner image roll most
+      # likely introduced a package that now prompts. timeout-minutes turns a
+      # hang into a failure that reports, rather than one that occupies a
+      # runner until the six-hour ceiling.
       - name: install reference tools
+        timeout-minutes: 10
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq pngcheck libjpeg-progs steghide
