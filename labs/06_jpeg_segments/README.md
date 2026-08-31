@@ -59,3 +59,7 @@ python3 -m pytest tests/test_labs_a.py -q
 Structural analysis has a floor. When a format declines to declare a length,
 you have to decode to find the boundary. This is the last A-group lab for
 exactly that reason.
+
+---
+
+[Chinese version](README_zh.md)

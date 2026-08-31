@@ -47,3 +47,7 @@ python3 -m pytest tests/test_labs_a.py -q
 ## 它教什么
 
 签名命中是线索，能解析通过的结构才是发现。证据阶梯把这个区别从修辞变成可记录的东西。
+
+---
+
+[English version](README.md)

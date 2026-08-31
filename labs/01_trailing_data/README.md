@@ -51,3 +51,7 @@ python3 -m pytest tests/test_labs_a.py -q
 The first question about a carrier is not "what does this look like?" but
 "does every byte in this file have a structural reason to exist?". Most of
 the A group is that question asked in different containers.
+
+---
+
+[Chinese version](README_zh.md)

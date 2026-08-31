@@ -46,3 +46,7 @@ python3 -m pytest tests/test_labs_a.py -q
 
 面对一个载体，第一个问题不是「这看起来像什么」，而是「这个文件里每一个字节，是否
 都有结构上存在的理由」。A 组的大部分内容，就是把这个问题在不同容器里各问一遍。
+
+---
+
+[English version](README.md)

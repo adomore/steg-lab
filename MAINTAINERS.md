@@ -4,7 +4,7 @@ How to resume work without re-deriving the conventions.
 
 ## Current state
 
-Version `1.0.0`. Seventeen labs, eight theory chapters, eight gates.
+Version `1.1.0`. Seventeen labs, eight theory chapters, eight gates.
 <!-- claim:labs=17 -->
 <!-- claim:theory_chapters=8 -->
 
@@ -62,10 +62,13 @@ the same image family as the carrier. Skipping this moved lab 07's
 false-positive rate from 0% to 25%, which is cover source mismatch and is
 not a subtle effect.
 
-**An unvalidated detector does not enter `DETECTORS`.** Two are in the
+**An unvalidated detector does not enter `DETECTORS`.** One is in the
 module, renamed with an `_UNVALIDATED` suffix and documented. A registry
 that lists an estimator nobody checked is how an unchecked number reaches a
-report.
+report. There were two until Sample Pair Analysis was rederived and passed
+(G-11); promotion is the intended way out, and the count is tagged so this
+sentence goes red instead of stale the next time one leaves.
+<!-- claim:unvalidated_detectors=1 -->
 
 **Bilingual lockstep from day one.** Every `.md` has a `_zh` sibling with an
 identical heading structure. Prose is translated; code, commands, flags,
@@ -81,7 +84,12 @@ pinned by SHA-256.
 ## Adding a lab NN
 
 1. `mkdir labs/NN_name`, write `lab.py` to the interface above.
-2. Add `"NN_name"` to `LAB_DIRS` in `labs/common.py`.
+2. Add `"NN_name"` to `LAB_DIRS` in `labs/common.py`, and route it in
+   `pipeline.CONTAINER_LABS` -- or name it in `pipeline.UNROUTED_BY_DESIGN`
+   with the reason. Tests assert both registries against the directory
+   listing, so neither can be skipped quietly. `10_palette` was missing from
+   the first for a release, and lab 18's carrier was unrouted in the second
+   until gate G7 went looking.
 3. Write `README.md` and `README_zh.md` with the summary table at the top,
    including the measured FPR.
 4. Add tests to `tests/test_labs_a.py`: detection, payload recovery, and the
@@ -129,12 +137,28 @@ detectors were written and withheld as unvalidated (gaps G-11, G-12), and
 the corpus was shown inadequate for statistical work by measurement rather
 than by assumption.
 
-**P2** -- T3 and T5; STC and adaptive costs; SPAM/SRM plus ensemble;
-C-group JPEG-domain labs, which reuse `decode_scan`'s coefficient output;
-lab 17 connects to stegseek-rs.
+**P2 -- done.** T3 and T5; STC and adaptive costs; SPAM/SRM plus ensemble;
+the C-group JPEG-domain labs 10, 13 and 14, which reuse `decode_scan`'s
+coefficient output. Sample Pair Analysis was rederived and promoted here
+(G-11). One item did not ship: lab 17, which was to connect to stegseek-rs.
 
-**P3** -- T6 and T7; D and E groups; the blind capstone gate G7; filesystem
-slack once a real volume is available.
+**P3 -- done.** T6 and T7; the D group (18, 20) and the E group (21, 22, 23);
+the blind capstone gate G7; filesystem slack, which turned out not to need a
+mounted volume after all -- `mkfs.vfat`, `debugfs` and `ntfscp` build and
+populate images as ordinary files (G-1).
+
+**Lab numbering has holes, and they are not placeholders.** Directory numbers
+come from the original outline; 11, 12, 15, 16, 17 and 19 were never built and
+no directory is reserved for them. Only 17 is still named in prose, in
+RESOURCES. Renumbering would break every cross-reference in the theory
+chapters for no gain, so the holes stay and this note explains them.
+
+**After v1.1.0 nothing is scheduled.** What is knowingly missing is in
+GAP_ANALYSIS, and the rows that would move this furthest are G-4 (ALASKA2 in
+the JPEG domain), G-18 (a second acquisition chain large enough to be precise
+rather than coarse) and G-10's standing question of whether porting the
+statistical layer to Rust pays, which has to be settled by measurement rather
+than by the belief that Rust is fast.
 
 ---
 

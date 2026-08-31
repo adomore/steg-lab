@@ -50,3 +50,7 @@ python3 -m pytest tests/test_labs_a.py -q
 
 结构分析有一条下限。当一种格式拒绝声明长度时，你必须解码才能找到边界。这也正是
 把它放在 A 组最后一个模块的原因。
+
+---
+
+[English version](README.md)

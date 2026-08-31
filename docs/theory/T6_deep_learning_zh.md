@@ -8,7 +8,7 @@ T5 以手工设计的残差收尾：一个差分算子、686 个特征、上面�
 换成「训练」。这次替换之后什么东西还站得住，才是有意思的问题，而回答它的办法是把网络造出来、
 然后一件件拆掉零件。
 
-`steganalysis/cnn.py` 是约 8,200 个参数的 numpy——im2col 卷积、batch normalisation、手写反向
+`steganalysis.cnn` 是约 8,200 个参数的 numpy——im2col 卷积、batch normalisation、手写反向
 传播、带动量的 SGD。没有框架，没有 GPU。反向传播在 gate G6 里对着中心差分校验，而不是靠信任。
 
 ## 6.2 三个架构论断

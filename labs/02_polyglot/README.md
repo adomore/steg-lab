@@ -55,3 +55,7 @@ python3 -m pytest tests/test_labs_a.py -q
 
 A signature hit is a lead. A structure that parses is a finding. The
 evidence ladder makes the difference recordable instead of rhetorical.
+
+---
+
+[Chinese version](README_zh.md)

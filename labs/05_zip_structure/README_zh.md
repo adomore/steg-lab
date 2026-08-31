@@ -5,6 +5,7 @@
 | 嵌入域 | container |
 | 算法族 | pseudo-encryption / archive-comment / unreferenced-gap |
 | 检测器 | `zip_pseudo_encryption`、`zip_archive_comment`、`zip_unreferenced_gap`、`zip_header_disagreement` |
+| 实测 FPR | 同源干净归档 0/100，每个检测器分别计数 |
 | 证据上限 | 注释与缝隙 E4，伪加密 E3 |
 
 ## 共同的根因
@@ -40,3 +41,7 @@ python3 -m pytest tests/test_labs_a.py -q
 当一种格式对自己的内容有两份描述时，就去比对这两份描述。这个模式在每一层反复出现：
 这里是本地头对中央目录，Lab 04 是 `IHDR` 对 `IDAT`，Lab 06 是声明的与解码出来的
 扫描长度。
+
+---
+
+[English version](README.md)

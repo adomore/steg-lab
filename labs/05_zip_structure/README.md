@@ -5,6 +5,7 @@
 | Domain | container |
 | Algorithm | pseudo-encryption / archive-comment / unreferenced-gap |
 | Detectors | `zip_pseudo_encryption`, `zip_archive_comment`, `zip_unreferenced_gap`, `zip_header_disagreement` |
+| Measured FPR | 0/100 same-source clean archives, each detector counted separately |
 | Evidence ceiling | E4 for comment and gap, E3 for pseudo-encryption |
 
 ## The shared root cause
@@ -47,3 +48,7 @@ python3 -m pytest tests/test_labs_a.py -q
 When a format has two descriptions of its own contents, compare them. The
 same pattern recurs at every layer: local versus central here, `IHDR` versus
 `IDAT` in lab 04, declared versus decoded scan length in lab 06.
+
+---
+
+[Chinese version](README_zh.md)

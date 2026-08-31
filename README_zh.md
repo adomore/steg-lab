@@ -3,7 +3,7 @@
 一套面向 Kali Linux 的隐写分析知识库：理论带可证伪的验收判据，实战模块的检测器是
 量出来的，不是描述出来的。
 
-**版本 1.0.0。** 十七个模块覆盖全部载体类别——容器、空域、JPEG-DCT、调色板、音频、
+**版本 1.1.0。** 十七个模块覆盖全部载体类别——容器、空域、JPEG-DCT、调色板、音频、
 文本、网络、视频与三种文件系统——八章理论各带一道通过的 gate、一条可执行的取证流水线，
 以及一条对 Python 参考实现做差分测试的 Rust 分流侧线。
 
@@ -148,7 +148,7 @@ make setup verify corpus test gates
 
 - [学习路径](LEARNING_PATH_zh.md) -- 按什么顺序读什么
 - [理论层](docs/theory/README_zh.md) -- T0-T7 及其 gate
-- [分析员检查清单](STEGANALYSIS_CHECKLIST_zh.md) -- 单页速查
+- [分析员检查清单](STEGANALYSIS_CHECKLIST_zh.md) -- 办案顺序，覆盖每一个载体族
 - [威胁模型模板](THREAT_MODEL_TEMPLATE_zh.md)
 - [上手指南](GETTING_STARTED_zh.md) -- 半小时，结束时有一条你自己藏进去、
   再自己找出来的载荷

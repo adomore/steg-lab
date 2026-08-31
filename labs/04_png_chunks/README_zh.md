@@ -58,3 +58,7 @@ python3 gates/g1_parsers.py
 ## 它教什么
 
 一个文件可以同时「完全符合规范」且「在撒谎」。一致性检查与隐写分析是两个不同的问题。
+
+---
+
+[English version](README.md)

@@ -36,8 +36,10 @@
 
 删掉一个文件，让一个更小的文件占用它的簇，旧文件的尾巴就活在新文件的 slack 里。构造并实测：
 
-`BIG.DAT` 是 `"CONFIDENTIAL MEMO "` 重复 220 次，写入后删除；随后 6 字节的 `NEW.TXT`
-占用了同一个簇。
+```
+BIG.DAT  = "CONFIDENTIAL MEMO " x 220     -> written, then deleted
+NEW.TXT  = "short\n"                      -> takes the same cluster
+```
 
 检测器报告 3,954 个非零 slack 字节、3.5 bits/byte，而提取出来的内容是：
 
