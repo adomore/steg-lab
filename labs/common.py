@@ -25,6 +25,12 @@ from steganalysis.evidence import Evidence, FalsePositiveBaseline, Report
 
 LABS_DIR = Path(__file__).resolve().parent
 
+#: Every lab directory, in reading order. Numbering has holes -- 11, 12, 15,
+#: 16, 17 and 19 come from the original outline and were never built -- so this
+#: cannot be derived from a range. It CAN be derived from the filesystem, and
+#: tests/test_labs_a.py asserts that it matches: `10_palette` was missing here
+#: for a whole release because nothing compared the two, and the `claim:labs`
+#: counter reads directories rather than this list, so it stayed green.
 LAB_DIRS = [
     "01_trailing_data",
     "02_polyglot",
@@ -35,6 +41,7 @@ LAB_DIRS = [
     "07_lsb_replacement",
     "08_lsb_matching",
     "09_feature_based",
+    "10_palette",
     "13_jsteg_jpeg",
     "14_f5_calibration",
     "18_audio_lsb",

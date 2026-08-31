@@ -61,6 +61,23 @@ STATISTICAL_LABS = [
 
 ALL_LABS = STRUCTURAL_LABS + STATISTICAL_LABS
 
+#: Two labs are deliberately absent from the lists above, and saying so here is
+#: the point: an unexplained gap in a registry reads as an oversight, and the
+#: next person to notice it has to re-derive the reason or "fix" it.
+#:
+#:   08_lsb_matching  -- its detect() returns an empty report by construction.
+#:                       The lab's content IS that no shipped detector separates
+#:                       LSB matching from clean covers, so a pipeline stage for
+#:                       it could only ever add cost.
+#:   09_feature_based -- its detect() needs a trained FldEnsemble passed in, and
+#:                       a blind pipeline has no training set to give it. It
+#:                       stays in ALL_LABS, which measure_baselines() iterates,
+#:                       but out of CONTAINER_LABS, which routes carriers.
+#:
+#: tests/test_labs_b.py pins both, so a lab forgotten in future goes red while
+#: these two stay stated exceptions.
+UNROUTED_BY_DESIGN = {"08_lsb_matching", "09_feature_based"}
+
 #: Which labs apply to which container, and for the statistical ones, to which
 #: *kind* of container.
 #:

@@ -237,6 +237,14 @@ def repo_facts() -> Dict[str, int]:
     tests = 0
     for t in (ROOT / "tests").glob("test_*.py"):
         tests += len(re.findall(r"^def test_", t.read_text(encoding="utf-8"), re.M))
+    # Withheld detectors are a count the prose states in words, so it drifts the
+    # moment one is promoted -- which is what happened when Sample Pair Analysis
+    # passed validation and MAINTAINERS went on saying "two" for the rest of the
+    # release. Counting the suffix makes the sentence checkable.
+    unvalidated = 0
+    for m in (ROOT / "steganalysis").glob("*.py"):
+        unvalidated += len(re.findall(r"^def \w+_UNVALIDATED\b",
+                                      m.read_text(encoding="utf-8"), re.M))
     # docs_en and docs_zh exist to express the pairing invariant, so a document
     # that opted out of pairing belongs in neither count. Without this a
     # single-language page inflates docs_en and the two numbers stop matching,
@@ -251,6 +259,7 @@ def repo_facts() -> Dict[str, int]:
         "test_functions": tests,
         "docs_en": len(en),
         "docs_zh": len(zh),
+        "unvalidated_detectors": unvalidated,
     }
 
 
@@ -316,7 +325,21 @@ KNOWN_TOOLS = {
 
 
 def _local_flag_check(cmd: str) -> List[str]:
-    """Verify flags for this repo's own Python entry points via --help."""
+    """Verify flags for this repo's own Python entry points via --help.
+
+    "Could not check" and "checked, and it is wrong" are different facts and
+    must read differently. argparse exits 0 on --help, so a non-zero status
+    means the script never reached argparse: a missing runtime dependency, an
+    import error, a crash. The help text is then empty and every flag looks
+    absent -- which is how this checker once reported twelve missing flags on
+    a machine that was merely lacking scikit-learn, every one of them present
+    in the source. That is F-54 committed inside the validator built to
+    prevent it, so the failure is reported as what it is.
+
+    It is still reported. A checker that quietly skips when it cannot run is
+    the other half of the same bug (F-52), and CI installs the stack, so this
+    branch should never be reached there.
+    """
     issues: List[str] = []
     m = re.match(r"python3?\s+(\S+\.py)\s*(.*)", cmd)
     if not m:
@@ -327,8 +350,16 @@ def _local_flag_check(cmd: str) -> List[str]:
     flags = re.findall(r"(?<!\S)(--[a-zA-Z][\w-]*)", m.group(2))
     if not flags:
         return issues
-    proc = subprocess.run([sys.executable, str(script), "--help"],
-                          capture_output=True, text=True, cwd=ROOT)
+    try:
+        proc = subprocess.run([sys.executable, str(script), "--help"],
+                              capture_output=True, text=True, cwd=ROOT,
+                              timeout=60)
+    except subprocess.TimeoutExpired:
+        return [f"cannot verify flags: {m.group(1)} --help did not finish in 60s"]
+    if proc.returncode != 0:
+        cause = (proc.stderr.strip().splitlines() or ["no stderr"])[-1]
+        return [f"cannot verify flags {' '.join(flags)}: {m.group(1)} --help "
+                f"exited {proc.returncode} ({cause[:80]})"]
     helptext = proc.stdout + proc.stderr
     for flag in flags:
         if flag not in helptext:

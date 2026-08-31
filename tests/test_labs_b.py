@@ -221,6 +221,27 @@ def test_lab08_stego_is_a_valid_image():
 
 # ------------------------------------- pipeline coverage of every carrier
 
+def test_every_lab_is_either_routed_or_a_stated_exception():
+    """No lab falls out of the pipeline silently.
+
+    `08_lsb_matching` and `09_feature_based` are absent on purpose -- one has
+    no working detector, the other needs a trained classifier a blind pipeline
+    cannot supply -- and `pipeline.UNROUTED_BY_DESIGN` says so. Everything else
+    must be reachable. The failure this prevents is the one gap G7 already hit
+    once: a lab that exists, has tests, and is never actually run on a carrier.
+    """
+    import itertools
+    from labs.common import LAB_DIRS
+    from steganalysis import pipeline as P
+
+    routed = set(itertools.chain.from_iterable(P.CONTAINER_LABS.values()))
+    unrouted = set(LAB_DIRS) - routed
+    assert unrouted == P.UNROUTED_BY_DESIGN, (
+        f"labs neither routed nor declared an exception: "
+        f"{sorted(unrouted - P.UNROUTED_BY_DESIGN)}")
+    assert routed <= set(LAB_DIRS), "pipeline routes a lab that does not exist"
+
+
 def test_pipeline_routes_every_carrier_family():
     """Eight carrier families were built after the pipeline and never wired in.
 
