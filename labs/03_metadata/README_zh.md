@@ -45,3 +45,7 @@ python3 -m pytest tests/test_labs_a.py -q
 
 这是第一个「判据不属于格式、而属于来源」的模块。T4 与 T5 的全部内容，就是这个
 问题的放大版。
+
+---
+
+[English version](README.md)

@@ -24,8 +24,10 @@ their evidence.
 
 - **stegseek-rs** -- a Rust reimplementation of the stegseek cracker
   covering the PRNG/selector subsystem, the S2K KDF, AES-128-CBC and the
-  CVE-2021-27211 seed exploitation. Lab 17 (P2) connects to it directly:
-  steghide passphrase recovery is the canonical E4-to-E5 transition.
+  CVE-2021-27211 seed exploitation. A lab connecting to it was planned for P2
+  as lab 17 and never built, which is why **E5 is the one rung of the ladder
+  this repository defines but never reaches**: steghide passphrase recovery is
+  the canonical E4-to-E5 transition, and here it stays a pointer.
 - **sc-audit-lab** -- the smart-contract audit lab whose structure this
   repository borrows: gated theory, measured practice, EN/ZH lockstep,
   documentation checkers.

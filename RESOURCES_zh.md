@@ -21,8 +21,9 @@ Gate G0 与 G1 明确依赖 `pngcheck`、`djpeg` 与 `steghide`。缺了它们�
 ## 本系列中的相关工作
 
 - **stegseek-rs** -- stegseek 破解器的 Rust 重实现，覆盖 PRNG/selector 子系统、
-  S2K KDF、AES-128-CBC 与 CVE-2021-27211 的种子利用。Lab 17（P2）与它直接对接：
-  steghide 口令恢复正是 E4 到 E5 的典型跃迁。
+  S2K KDF、AES-128-CBC 与 CVE-2021-27211 的种子利用。原计划在 P2 以 lab 17 的形式
+  与它对接，最终没有建成——所以 **E5 是本仓库定义了却从未抵达的那一级**：steghide
+  口令恢复正是 E4 到 E5 的典型跃迁，而在这里它只是一个指针。
 - **sc-audit-lab** -- 本仓库借用其结构的智能合约审计实验室：理论带 gate、实战量化、
   中英 lockstep、文档检查器。
 

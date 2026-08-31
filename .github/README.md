@@ -9,7 +9,7 @@
 理论带可证伪的验收判据，检测器的阈值是量出来的，不是描述出来的。
 
 [![ci](https://github.com/adomore/steg-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/adomore/steg-lab/actions/workflows/ci.yml)
-![version](https://img.shields.io/badge/version-1.0.0-2C558F)
+![version](https://img.shields.io/badge/version-1.1.0-2C558F)
 ![labs](https://img.shields.io/badge/实战模块-17-2C558F)
 ![gates](https://img.shields.io/badge/验收%20gate-8-2C558F)
 ![docs](https://img.shields.io/badge/文档-中英对照-2C558F)

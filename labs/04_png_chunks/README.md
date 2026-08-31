@@ -63,3 +63,7 @@ python3 gates/g1_parsers.py
 
 A file can be simultaneously specification-conformant and dishonest.
 Conformance checking and steganalysis are different questions.
+
+---
+
+[Chinese version](README_zh.md)

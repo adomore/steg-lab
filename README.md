@@ -4,7 +4,7 @@ A steganalysis knowledge base for Kali Linux: theory with falsifiable
 acceptance criteria, and labs whose detectors are measured rather than
 described.
 
-**Version 1.0.0.** Seventeen labs covering every carrier class -- container,
+**Version 1.1.0.** Seventeen labs covering every carrier class -- container,
 spatial, JPEG-DCT, palette, audio, text, network, video and three filesystems --
 eight theory chapters with eight gates passing, an executable forensic pipeline,
 and a Rust triage sideline differentially tested against the Python reference.
@@ -160,7 +160,8 @@ times in a sibling project.
 
 - [Learning path](LEARNING_PATH.md) -- what to read in what order
 - [Theory layer](docs/theory/README.md) -- T0-T7 and their gates
-- [Analyst checklist](STEGANALYSIS_CHECKLIST.md) -- the one-pager
+- [Analyst checklist](STEGANALYSIS_CHECKLIST.md) -- the casework order,
+  every carrier family covered
 - [Threat model template](THREAT_MODEL_TEMPLATE.md)
 - [Getting started](GETTING_STARTED.md) -- half an hour, ending with a
   payload you hid and then found

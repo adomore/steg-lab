@@ -156,32 +156,44 @@ insists a baseline come from the *same* source rather than from a source
 that seems similar: "similar" is doing all the work, and it is not doing it
 reliably.
 
-## 4.8 What this repository cannot do
+## 4.8 Two detectors that did not ship, and where they went
 
-Two detectors were written for this chapter and neither ships.
+Both were written for this chapter and neither passed validation at P1.
+Since then one has been rederived and now ships; the other is still
+withheld, but for a reason that has been measured rather than guessed.
+The two exits are worth reading together, because "withheld" is a state a
+detector is supposed to leave in one of exactly these two directions.
 
-**Sample Pair Analysis.** The theory is sound and belongs in any treatment
-of this material. Two candidate set partitions were implemented and neither
-tracked ground truth -- estimates moved in the wrong direction against known
-payloads. Rather than ship an estimator that produces confident numbers from
-an unverified formula, it is kept in the module, renamed
-`sample_pair_analysis_UNVALIDATED`, and excluded from the registry. Gap
-G-11; P2 derives it from the source paper with each step checked against
-measured transition counts.
+**Sample Pair Analysis -- rederived, validated, shipped.** Two candidate set
+partitions were implemented at P1 and neither tracked ground truth:
+estimates moved in the wrong direction against known payloads. Rather than
+ship an estimator that produces confident numbers from an unverified
+formula, it was kept in the module under an `_UNVALIDATED` suffix and
+excluded from the registry. P2 derived it again from Dumitrescu, Wu and Wang
+(2003) equation (18), checking each step against measured transition counts,
+and it is now in `DETECTORS`: true payload against estimate reads 0.00 to
+0.018, 0.10 to 0.091, 0.20 to 0.208, 0.40 to 0.391, and it stays correctly
+flat against LSB matching -- the same required failure as RS and Weighted
+Stego. Gap G-11 closed.
 
-**Calibrated HCF centre of mass.** This is the classical answer to "so what
-*does* detect LSB matching?". Measured AUC on this corpus: 0.482 at 0.25 bpp,
-0.472 at 0.5 bpp. Chance.
+**Calibrated HCF centre of mass -- still withheld, now for a known reason.**
+This is the classical answer to "so what *does* detect LSB matching?".
+Measured AUC on the synthetic corpus at P1: 0.482 at 0.25 bpp, 0.472 at
+0.5 bpp. Chance.
 
 The obvious explanation -- that these covers carry more high-frequency noise
 than a +/-1 perturbation -- was tested by sweeping cover noise from
 sigma=0.5 to sigma=6.0 and is **falsified**: AUC stayed within [0.505, 0.533]
 while cover local standard deviation moved only from 5.66 to 7.53, because
-the upsampled base dominates it. The remaining candidates are that this is
-the weak one-dimensional variant where Ker's method uses the
-two-dimensional adjacency histogram, or that the corpus lacks the
-natural-image statistics calibration assumes. Distinguishing them needs
-BOSSbase. Gap G-12.
+the upsampled base dominates it. Real photographs then separated the two
+remaining candidates. The corpus was the main effect: AUC at 1.0 bpp goes
+from 0.510 on synthetic covers to 0.705 on BOSSbase, while the
+two-dimensional adjacency form Ker actually specifies adds a further
+increment to 0.735 rather than supplying the missing one. That is an answer,
+not a promotion -- 0.705 is still below the bar for `DETECTORS`, so the
+suffix stays and the registry does not grow. Gap G-12 answered;
+`scripts/analyst-checks.py --only G-12` re-measures it and prints a
+register-or-not verdict, so the decision arrives when a larger corpus does.
 
 So the honest position at P1: **this repository detects LSB replacement and
 cannot detect LSB matching.** T5's feature sets and ensemble classifiers are

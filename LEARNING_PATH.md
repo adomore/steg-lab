@@ -23,7 +23,7 @@ T2 before T4 and T3 before T5 is not negotiable: you cannot build a detector
 for an algorithm you have not implemented, because you will not know which
 of its properties are essential and which are incidental.
 
-## Stage 0-1: where you are now
+## What stages 0-1 leave you able to do
 
 Both gates pass. What you should be able to do having finished them:
 
@@ -36,12 +36,16 @@ Both gates pass. What you should be able to do having finished them:
 The habit from T1 section 1.6 is the transferable part: parse, account,
 then compare the format's two descriptions of itself.
 
-## What P0 did not cover, and why
+## What P0 deferred, and what became of it
 
 **Filesystem slack and NTFS alternate data streams.** The outline placed
 this in the A group. It needs a real mounted volume, which the build
 environment did not have, and a lab whose commands cannot run is worse than
-no lab. Deferred to P3 with a hardware prerequisite. Lab 04 took its slot.
+no lab. Deferred to P3 with a hardware prerequisite recorded; lab 04 took its
+slot. The prerequisite turned out to be wrong. `mkfs.vfat`, `debugfs` and
+`ntfscp` build and populate images as ordinary files, so lab 23 shipped in P3
+covering FAT, ext4 and NTFS without mounting anything or needing privileges.
+A blocked prerequisite is worth re-testing before it is worth waiting for.
 
 **Statistical detection of any kind.** Everything in P0 is deterministic.
 That is a deliberate ordering choice, not an omission: the accounting habit

@@ -51,3 +51,7 @@ python3 -m pytest tests/test_labs_a.py -q
 
 This is the first lab where the threshold is not a property of the format
 but of the source. Everything in T4 and T5 is that problem, scaled up.
+
+---
+
+[Chinese version](README_zh.md)
