@@ -14,6 +14,8 @@ red rather than quietly inflating everyone's findings.
 
 from __future__ import annotations
 
+import random
+import struct
 import sys
 from pathlib import Path
 
@@ -22,7 +24,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from labs.common import load_lab, measure_baseline, payload_blob  # noqa: E402
+from labs.common import (LAB_DIRS, load_all_labs, load_lab,  # noqa: E402
+                         measure_baseline, payload_blob)
 from steganalysis import corpus  # noqa: E402
 from steganalysis.evidence import Evidence, UnsupportedVerdict  # noqa: E402
 
@@ -38,6 +41,35 @@ def png_cover() -> bytes:
 def jpeg_cover() -> bytes:
     return corpus.render(corpus.CoverSpec("t.jpg", 11_002, 192, 128, "photo_like",
                                           "jpeg", quality=92))
+
+
+# -------------------------------------------------------- the lab registry
+
+def test_lab_dirs_matches_the_directories_on_disk():
+    """The registry and the filesystem are two descriptions of one thing.
+
+    `10_palette` was absent from LAB_DIRS for a whole release. Nothing caught
+    it: `load_all_labs` has no caller, and the `claim:labs` counter in
+    check-docs reads the directory listing rather than this list, so the
+    documented count stayed correct while the code-level registry was short by
+    one. That is the same shape as every drift this repository checks for --
+    two descriptions of the same fact, only one of them maintained.
+
+    MAINTAINERS step 2 of "Adding a lab NN" is the convention; this is the
+    check that makes forgetting it go red.
+    """
+    on_disk = sorted(p.name for p in (ROOT / "labs").glob("[0-9][0-9]_*")
+                     if p.is_dir())
+    assert LAB_DIRS == on_disk
+
+
+def test_every_registered_lab_loads_and_meets_the_interface():
+    """LAB_DIRS is only worth having if every entry in it is real."""
+    labs = load_all_labs()
+    assert sorted(labs) == LAB_DIRS
+    for name, lab in labs.items():
+        for attr in ("NAME", "DOMAIN", "ALGORITHM", "embed", "detect"):
+            assert hasattr(lab, attr), f"{name} has no {attr}"
 
 
 # ---------------------------------------------------------------- lab 01
@@ -196,9 +228,23 @@ def test_lab04_height_truncation_is_invisible_to_everything_else(png_cover):
     assert restored_parsed.ihdr.height == hits[0].detail["true_height"]
 
 
-def test_lab04_zero_false_positives():
+@pytest.mark.parametrize("detector", ["png_crc_mismatch", "png_height_truncation",
+                                      "png_unknown_chunk"])
+def test_lab04_zero_false_positives(detector):
+    """One baseline per detector, because that is what the harness measures.
+
+    This test passed `"png_chunks"` -- the lab's `NAME`, not a detector -- for
+    as long as the lab existed. `measure_baseline` filters findings by
+    `f.detector == detector_name`, so a name no `Finding` can carry matches
+    nothing, `n_false_positives` is 0 by construction, and the assertion held
+    for exactly the reason it would have held for `"utter_nonsense"`. A
+    detector firing on all 100 clean covers would have shipped green.
+
+    MAINTAINERS states the rule this restores: baselines are per-detector, not
+    per-lab.
+    """
     lab = load_lab("04_png_chunks")
-    baseline = measure_baseline(lab.detect, "png_chunks", N_CLEAN, "png", 343_000)
+    baseline = measure_baseline(lab.detect, detector, N_CLEAN, "png", 343_000)
     assert baseline.n_false_positives == 0, baseline.describe()
 
 
@@ -251,6 +297,67 @@ def test_lab05_clean_archive_is_clean():
     assert lab.detect(clean, "clean.zip", baseline=None).verdict == Evidence.E0
 
 
+def _half_flagged_archive(where: str) -> bytes:
+    """Set the encryption flag on one side of the archive only.
+
+    There is no embedder for this shape and there should not be: the detector
+    reconciles ZIP's two descriptions of itself, so the carrier it looks for
+    is one some other tool produced, not one this lab writes. Flipping the
+    local header is what a hex editor makes easy; flipping the central one
+    isolates the detector, because pseudo-encryption reads the local flag and
+    stays silent.
+    """
+    lab = load_lab("05_zip_structure")
+    out = bytearray(lab.make_archive())
+    if where == "local":
+        off = out.find(b"PK\x03\x04") + 6
+    else:
+        off = out.find(b"PK\x01\x02") + 8
+    (flags,) = struct.unpack("<H", out[off:off + 2])
+    struct.pack_into("<H", out, off, flags | 0x0001)
+    return bytes(out)
+
+
+@pytest.mark.parametrize("where,also_fires", [("local", {"zip_pseudo_encryption"}),
+                                              ("central", set())])
+def test_lab05_header_disagreement_fires(where, also_fires):
+    """ZIP is read from the central directory, so half a flag is invisible.
+
+    A reader that trusts the central directory reports no encryption while
+    the local header claims it, or the reverse. Either way the file disagrees
+    with itself, and disagreement is the finding.
+    """
+    lab = load_lab("05_zip_structure")
+    report = lab.detect(_half_flagged_archive(where), f"{where}.zip", baseline=None)
+
+    hits = [f for f in report.findings if f.detector == "zip_header_disagreement"]
+    assert len(hits) == 1, [f.detector for f in report.findings]
+    assert "encryption flag" in hits[0].claim
+
+    others = {f.detector for f in report.findings} - {"zip_header_disagreement"}
+    assert others == also_fires
+
+
+def test_lab05_header_disagreement_zero_false_positives():
+    """100 same-source clean archives, from the builder the stego carriers use.
+
+    PNG covers would be the wrong clean set here: `parse_zip` finds no local
+    entries in one, so the reconciliation never runs and the baseline would
+    measure nothing. Same-source means archives.
+    """
+    lab = load_lab("05_zip_structure")
+    rng = random.Random(353_000)
+    positives = 0
+    for i in range(N_CLEAN):
+        entries = [(f"file{j}.bin",
+                    bytes(rng.randrange(256) for _ in range(rng.randrange(1, 400))))
+                   for j in range(rng.randrange(1, 5))]
+        report = lab.detect(lab.make_archive(entries), f"clean{i}.zip", baseline=None)
+        if any(f.detector == "zip_header_disagreement" for f in report.findings):
+            positives += 1
+    assert positives == 0, f"{positives}/{N_CLEAN} clean archives flagged"
+
+
 # ---------------------------------------------------------------- lab 06
 
 @pytest.mark.parametrize("variant,detector", [
@@ -275,9 +382,18 @@ def test_lab06_variants(jpeg_cover, variant, detector):
     assert report.verdict == Evidence.E4
 
 
-def test_lab06_zero_false_positives():
+@pytest.mark.parametrize("detector", ["jpeg_byte_accounting", "jpeg_comment_segment",
+                                      "jpeg_rogue_appn", "jpeg_scan_surplus"])
+def test_lab06_zero_false_positives(detector):
+    """Same defect as lab 04's, same repair.
+
+    `"jpeg_segments"` is this lab's `NAME`. None of its four detectors carries
+    it, so the baseline counted nothing. `jpeg_byte_accounting` in particular
+    had no other test at all: the variant table above covers the three
+    embedders, and byte accounting fires on gaps no embedder produces.
+    """
     lab = load_lab("06_jpeg_segments")
-    baseline = measure_baseline(lab.detect, "jpeg_segments", N_CLEAN, "jpeg", 361_000)
+    baseline = measure_baseline(lab.detect, detector, N_CLEAN, "jpeg", 361_000)
     assert baseline.n_false_positives == 0, baseline.describe()
 
 

@@ -175,3 +175,38 @@ def test_a_single_language_document_is_in_neither_pairing_count(tmp_path):
     (tmp_path / "docs" / "theory").mkdir(parents=True, exist_ok=True)
     facts = load_checker(tmp_path).repo_facts()
     assert facts["docs_en"] == facts["docs_zh"] == 1
+
+
+# ------------------------------------------------- withheld-detector count
+
+def _skeleton(root: Path) -> None:
+    for sub in ("labs", "gates", "tests", "steganalysis"):
+        (root / sub).mkdir(exist_ok=True)
+    (root / "docs" / "theory").mkdir(parents=True, exist_ok=True)
+
+
+def test_unvalidated_detectors_are_counted_from_the_suffix(tmp_path):
+    """MAINTAINERS states this count in words, and it went stale for a release.
+
+    Sample Pair Analysis was withheld, then rederived and promoted into
+    DETECTORS, and the sentence saying "two are in the module" survived
+    unchanged. Counting the suffix is what turns that into a red bar.
+    """
+    _skeleton(tmp_path)
+    (tmp_path / "steganalysis" / "detectors.py").write_text(
+        "def working(x):\n    return x\n\n\n"
+        "def calibrated_hcf_com_UNVALIDATED(x):\n    return x\n",
+        encoding="utf-8")
+    assert load_checker(tmp_path).repo_facts()["unvalidated_detectors"] == 1
+
+
+def test_promoting_a_detector_turns_a_stale_claim_red(tmp_path):
+    """The drift this key exists to catch, injected."""
+    _skeleton(tmp_path)
+    (tmp_path / "steganalysis" / "detectors.py").write_text(
+        "def only_one_UNVALIDATED(x):\n    return x\n", encoding="utf-8")
+    write_pair(tmp_path, "doc",
+               ALIGNED_EN + "\nTwo are withheld.\n<!-- claim:unvalidated_detectors=2 -->\n",
+               ALIGNED_ZH + "\n两个被扣住。\n<!-- claim:unvalidated_detectors=2 -->\n")
+    problems = load_checker(tmp_path).check_claims()
+    assert any("unvalidated_detectors=2 but repo has 1" in p[1] for p in problems)
